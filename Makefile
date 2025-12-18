@@ -1,0 +1,53 @@
+.PHONY: help build up down restart logs shell clean dev lint
+
+# Default target
+help:
+	@echo "Available commands:"
+	@echo "  make build    - Build the Docker image"
+	@echo "  make up       - Start the application in detached mode"
+	@echo "  make down     - Stop and remove containers"
+	@echo "  make restart  - Restart the application"
+	@echo "  make logs     - Show application logs"
+	@echo "  make shell    - Open a shell in the running container"
+	@echo "  make clean    - Remove containers, images, and volumes"
+	@echo "  make dev      - Run the app in development mode (without Docker)"
+	@echo "  make lint     - Run ESLint to check code quality"
+
+# Build the Docker image
+build:
+	docker-compose build
+
+# Start the application
+up:
+	docker-compose up -d
+	@echo "Application is running at http://localhost:3000"
+
+# Stop the application
+down:
+	docker-compose down
+
+# Restart the application
+restart: down up
+
+# Show logs
+logs:
+	docker-compose logs -f
+
+# Open shell in container
+shell:
+	docker-compose exec web sh
+
+# Clean everything
+clean:
+	docker-compose down -v
+	docker rmi movister-parallel-porter-web 2>/dev/null || true
+	@echo "Cleaned up containers, images, and volumes"
+
+# Development mode (without Docker)
+dev:
+	npm run dev
+
+# Run linting
+lint:
+	npm run lint
+
