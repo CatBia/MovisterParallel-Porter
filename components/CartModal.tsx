@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { useCart } from "@/context/CartContext";
 import Image from "next/image";
 import Link from "next/link";
@@ -10,7 +11,27 @@ interface CartModalProps {
 }
 
 export default function CartModal({ isOpen, onClose }: CartModalProps) {
-  const { cart, removeFromCart, updateQuantity, getTotalPrice, clearCart } = useCart();
+  const { cart, removeFromCart, updateQuantity, getTotalPrice, clearCart, submitOrder, isSubmitting } = useCart();
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState(false);
+
+  const handleCheckout = async () => {
+    try {
+      setError(null);
+      setSuccess(false);
+      const order = await submitOrder();
+      if (order) {
+        setSuccess(true);
+        setTimeout(() => {
+          onClose();
+          setSuccess(false);
+        }, 2000);
+      }
+    } catch (err) {
+      setError("Failed to submit order. Please try again.");
+      console.error("Checkout error:", err);
+    }
+  };
 
   if (!isOpen) return null;
 
@@ -103,18 +124,30 @@ export default function CartModal({ isOpen, onClose }: CartModalProps) {
                       ${getTotalPrice().toFixed(2)}
                     </span>
                   </div>
+                  {error && (
+                    <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
+                      {error}
+                    </div>
+                  )}
+                  {success && (
+                    <div className="mb-4 p-3 bg-green-100 border border-green-400 text-green-700 rounded">
+                      Order placed successfully!
+                    </div>
+                  )}
                   <div className="flex space-x-2">
                     <button
                       onClick={clearCart}
-                      className="flex-1 bg-gray-200 text-gray-800 py-2 px-4 rounded-lg hover:bg-gray-300 font-medium"
+                      disabled={isSubmitting}
+                      className="flex-1 bg-gray-200 text-gray-800 py-2 px-4 rounded-lg hover:bg-gray-300 font-medium disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       Clear Cart
                     </button>
                     <button
-                      onClick={onClose}
-                      className="flex-1 bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 font-medium"
+                      onClick={handleCheckout}
+                      disabled={isSubmitting || cart.length === 0}
+                      className="flex-1 bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 font-medium disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                      Checkout
+                      {isSubmitting ? "Processing..." : "Checkout"}
                     </button>
                   </div>
                 </div>

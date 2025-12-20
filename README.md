@@ -4,12 +4,14 @@ A modern, responsive e-commerce web application built with Next.js, React, TypeS
 
 ## Features
 
-- 🛍️ **Product Catalog**: Browse through a curated selection of products
+- 🛍️ **Product Catalog**: Browse through products fetched from backend API
 - 🔍 **Product Details**: View detailed information about each product
 - 🛒 **Shopping Cart**: Add products to cart, adjust quantities, and view totals
+- 📦 **Order Management**: Submit orders to backend and view order history
 - 💾 **Persistent Cart**: Cart data is saved to localStorage
 - 📱 **Responsive Design**: Works seamlessly on desktop, tablet, and mobile devices
 - 🎨 **Modern UI**: Clean and intuitive user interface with smooth animations
+- 🔌 **Backend Integration**: Connected to REST API at localhost:8080
 
 ## Getting Started
 
@@ -18,6 +20,7 @@ A modern, responsive e-commerce web application built with Next.js, React, TypeS
 - Node.js 18+ and npm (for local development)
 - Docker and Docker Compose (for containerized deployment)
 - Make (optional, for using Makefile commands)
+- Backend API running on `localhost:8082` (see Backend Configuration below)
 
 ### Running with Docker (Recommended)
 
@@ -34,7 +37,7 @@ Or use Docker Compose directly:
 docker-compose up --build
 ```
 
-2. Open [http://localhost:3000](http://localhost:3000) in your browser to see the app.
+2. Open [http://localhost:3001](http://localhost:3001) in your browser to see the app.
 
 3. View logs:
 ```bash
@@ -69,7 +72,76 @@ npm install
 npm run dev
 ```
 
-3. Open [http://localhost:3000](http://localhost:3000) in your browser to see the app.
+3. Open [http://localhost:3001](http://localhost:3001) in your browser to see the app.
+
+## Backend Configuration
+
+The frontend connects to a backend gRPC server running on `localhost:8082`. The gRPC server address can be configured using environment variables.
+
+### Environment Variables
+
+Create a `.env.local` file in the root directory:
+
+```bash
+GRPC_SERVER=localhost:8082
+# Or use BACKEND_URL (will be converted to gRPC format)
+BACKEND_URL=http://localhost:8082
+```
+
+If not set, it defaults to `localhost:8082`.
+
+### gRPC Services
+
+The backend should provide the following gRPC services defined in the `proto/` directory:
+
+**ProductService:**
+- `GetProducts(GetProductsRequest) returns (GetProductsResponse)` - Get all products
+- `GetProduct(GetProductRequest) returns (Product)` - Get a specific product
+
+**OrderService:**
+- `GetOrders(GetOrdersRequest) returns (GetOrdersResponse)` - Get all orders
+- `GetOrder(GetOrderRequest) returns (Order)` - Get a specific order
+- `CreateOrder(CreateOrderRequest) returns (Order)` - Create a new order
+- `UpdateOrder(UpdateOrderRequest) returns (Order)` - Update an order
+- `DeleteOrder(DeleteOrderRequest) returns (DeleteOrderResponse)` - Delete an order
+
+### Protobuf Definitions
+
+The protobuf service definitions are located in the `proto/` directory:
+- `proto/products.proto` - Product service definitions
+- `proto/orders.proto` - Order service definitions
+
+These files define the gRPC service contracts between the frontend and backend.
+
+### API Data Models
+
+**Product:**
+```typescript
+{
+  id: string;
+  name: string;
+  description: string;
+  price: number;
+  image: string;
+  category: string;
+  inStock: boolean;
+}
+```
+
+**Order:**
+```typescript
+{
+  id?: string;
+  items: Array<{
+    productId: string;
+    quantity: number;
+    price: number;
+  }>;
+  total: number;
+  status?: string;
+  createdAt?: string;
+}
+```
 
 ## Project Structure
 
@@ -77,9 +149,20 @@ npm run dev
 ├── app/
 │   ├── layout.tsx          # Root layout with navigation
 │   ├── page.tsx            # Home page with product grid
+│   ├── api/
+│   │   ├── products/
+│   │   │   ├── route.ts    # Products API route (gRPC proxy)
+│   │   │   └── [id]/
+│   │   │       └── route.ts # Single product API route
+│   │   └── orders/
+│   │       ├── route.ts    # Orders API route (gRPC proxy)
+│   │       └── [id]/
+│   │           └── route.ts # Single order API route
 │   ├── products/
 │   │   └── [id]/
 │   │       └── page.tsx    # Product detail page
+│   ├── orders/
+│   │   └── page.tsx        # Orders listing page
 │   └── globals.css         # Global styles
 ├── components/
 │   ├── ProductCard.tsx     # Product card component
@@ -88,10 +171,17 @@ npm run dev
 │   └── CartModal.tsx      # Shopping cart modal
 ├── context/
 │   └── CartContext.tsx    # Cart state management
+├── lib/
+│   ├── api.ts             # REST API client (legacy, now uses gRPC)
+│   └── grpc-client.ts     # gRPC client for backend communication
+├── proto/
+│   ├── products.proto     # Product service protobuf definitions
+│   └── orders.proto       # Order service protobuf definitions
 ├── data/
-│   └── products.ts        # Product data
+│   └── products.ts        # Product data (legacy, now from backend)
 └── types/
-    └── product.ts         # TypeScript types
+    ├── product.ts         # TypeScript types
+    └── order.ts           # Order TypeScript types
 ```
 
 ## Available Scripts
@@ -115,6 +205,8 @@ The application includes Docker support for easy deployment:
 - **TypeScript** - Type safety
 - **Tailwind CSS** - Utility-first CSS framework
 - **React Context API** - State management for cart
+- **gRPC** - High-performance RPC framework for backend communication
+- **Protocol Buffers** - Data serialization format for gRPC services
 
 ## Features in Detail
 

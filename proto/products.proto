@@ -1,0 +1,31 @@
+syntax = "proto3";
+
+package products;
+
+service ProductService {
+  rpc GetProducts(GetProductsRequest) returns (GetProductsResponse);
+  rpc GetProduct(GetProductRequest) returns (Product);
+}
+
+message GetProductsRequest {
+  // Empty for now, can add filters later
+}
+
+message GetProductsResponse {
+  repeated Product products = 1;
+}
+
+message GetProductRequest {
+  string id = 1;
+}
+
+message Product {
+  string id = 1;
+  string name = 2;
+  string description = 3;
+  double price = 4;
+  string image = 5;
+  string category = 6;
+  bool inStock = 7;
+}
+

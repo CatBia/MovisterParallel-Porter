@@ -1,10 +1,10 @@
 "use client";
 
-import { products } from "@/data/products";
+import { useEffect, useState } from "react";
+import { apiClient } from "@/lib/api";
 import { Product } from "@/types/product";
 import Image from "next/image";
 import { useCart } from "@/context/CartContext";
-import { useState } from "react";
 
 interface ProductPageProps {
   params: {
@@ -13,15 +13,53 @@ interface ProductPageProps {
 }
 
 export default function ProductPage({ params }: ProductPageProps) {
-  const product = products.find((p) => p.id === params.id);
+  const [product, setProduct] = useState<Product | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const { addToCart } = useCart();
   const [quantity, setQuantity] = useState(1);
 
-  if (!product) {
+  useEffect(() => {
+    const fetchProduct = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        const data = await apiClient.getProduct(params.id);
+        setProduct(data);
+      } catch (err) {
+        console.error("Failed to fetch product:", err);
+        setError("Failed to load product. Please try again later.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProduct();
+  }, [params.id]);
+
+  if (loading) {
+    return (
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 text-center">
+        <div className="text-gray-600">Loading product...</div>
+      </div>
+    );
+  }
+
+  if (error || !product) {
     return (
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 text-center">
         <h1 className="text-3xl font-bold text-gray-900 mb-4">Product Not Found</h1>
-        <p className="text-gray-600">The product you&apos;re looking for doesn&apos;t exist.</p>
+        <p className="text-gray-600 mb-4">
+          {error || "The product you&apos;re looking for doesn&apos;t exist."}
+        </p>
+        {error && (
+          <button
+            onClick={() => window.location.reload()}
+            className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
+          >
+            Retry
+          </button>
+        )}
       </div>
     );
   }

@@ -22,7 +22,7 @@ build:
 # Start the application
 up:
 	docker-compose up -d
-	@echo "Application is running at http://localhost:3000"
+	@echo "Application is running at http://localhost:3001"
 
 # Stop the application
 down:

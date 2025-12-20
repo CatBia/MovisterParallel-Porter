@@ -28,6 +28,9 @@ export default function RootLayout({
                   <Link href="/" className="text-gray-700 hover:text-gray-900 font-medium">
                     Products
                   </Link>
+                  <Link href="/orders" className="text-gray-700 hover:text-gray-900 font-medium">
+                    Orders
+                  </Link>
                   <CartIcon />
                 </div>
               </div>

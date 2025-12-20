@@ -1,0 +1,58 @@
+syntax = "proto3";
+
+package orders;
+
+service OrderService {
+  rpc GetOrders(GetOrdersRequest) returns (GetOrdersResponse);
+  rpc GetOrder(GetOrderRequest) returns (Order);
+  rpc CreateOrder(CreateOrderRequest) returns (Order);
+  rpc UpdateOrder(UpdateOrderRequest) returns (Order);
+  rpc DeleteOrder(DeleteOrderRequest) returns (DeleteOrderResponse);
+}
+
+message GetOrdersRequest {
+  // Empty for now, can add filters later
+}
+
+message GetOrdersResponse {
+  repeated Order orders = 1;
+}
+
+message GetOrderRequest {
+  string id = 1;
+}
+
+message CreateOrderRequest {
+  repeated OrderItem items = 1;
+  double total = 2;
+}
+
+message UpdateOrderRequest {
+  string id = 1;
+  repeated OrderItem items = 2;
+  double total = 3;
+  string status = 4;
+}
+
+message DeleteOrderRequest {
+  string id = 1;
+}
+
+message DeleteOrderResponse {
+  bool success = 1;
+}
+
+message Order {
+  string id = 1;
+  repeated OrderItem items = 2;
+  double total = 3;
+  string status = 4;
+  string createdAt = 5;
+}
+
+message OrderItem {
+  string productId = 1;
+  int32 quantity = 2;
+  double price = 3;
+}
+

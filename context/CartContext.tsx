@@ -2,6 +2,7 @@
 
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { Product } from "@/types/product";
+import { apiClient, Order } from "@/lib/api";
 
 interface CartItem {
   product: Product;
@@ -16,12 +17,15 @@ interface CartContextType {
   clearCart: () => void;
   getTotalItems: () => number;
   getTotalPrice: () => number;
+  submitOrder: () => Promise<Order | null>;
+  isSubmitting: boolean;
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
 export function CartProvider({ children }: { children: React.ReactNode }) {
   const [cart, setCart] = useState<CartItem[]>([]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Load cart from localStorage on mount
   useEffect(() => {
@@ -82,6 +86,33 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     return cart.reduce((total, item) => total + item.product.price * item.quantity, 0);
   };
 
+  const submitOrder = async (): Promise<Order | null> => {
+    if (cart.length === 0) {
+      return null;
+    }
+
+    setIsSubmitting(true);
+    try {
+      const order: Omit<Order, 'id' | 'status' | 'createdAt'> = {
+        items: cart.map((item) => ({
+          productId: item.product.id,
+          quantity: item.quantity,
+          price: item.product.price,
+        })),
+        total: getTotalPrice(),
+      };
+
+      const createdOrder = await apiClient.createOrder(order);
+      clearCart();
+      return createdOrder;
+    } catch (error) {
+      console.error("Failed to submit order:", error);
+      throw error;
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   return (
     <CartContext.Provider
       value={{
@@ -92,6 +123,8 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         clearCart,
         getTotalItems,
         getTotalPrice,
+        submitOrder,
+        isSubmitting,
       }}
     >
       {children}
