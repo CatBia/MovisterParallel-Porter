@@ -1,4 +1,4 @@
-.PHONY: help build up down restart logs shell clean dev lint
+.PHONY: help build up down restart logs shell clean dev lint run-dev stop-dev
 
 # Default target
 help:
@@ -11,6 +11,8 @@ help:
 	@echo "  make shell    - Open a shell in the running container"
 	@echo "  make clean    - Remove containers, images, and volumes"
 	@echo "  make dev      - Run the app in development mode (without Docker)"
+	@echo "  make run-dev  - Run the app in development mode with Docker"
+	@echo "  make stop-dev - Stop the development Docker container"
 	@echo "  make lint     - Run ESLint to check code quality"
 
 # Build the Docker image
@@ -50,4 +52,12 @@ dev:
 # Run linting
 lint:
 	npm run lint
+
+# Development mode with Docker
+run-dev:
+	docker-compose -f docker-compose.dev.yml up --build
+
+# Stop development container
+stop-dev:
+	docker-compose -f docker-compose.dev.yml down
 
