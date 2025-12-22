@@ -5,7 +5,11 @@ import { apiClient } from "@/lib/api";
 import { Product } from "@/types/product";
 import ProductCard from "./ProductCard";
 
-export default function ProductGrid() {
+interface ProductGridProps {
+  selectedAisle?: string | null;
+}
+
+export default function ProductGrid({ selectedAisle = null }: ProductGridProps) {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -16,7 +20,13 @@ export default function ProductGrid() {
         setLoading(true);
         setError(null);
         const data = await apiClient.getProducts();
-        setProducts(data);
+        
+        // Filter by aisle if selected
+        const filteredProducts = selectedAisle
+          ? data.filter((product: Product) => product.category === selectedAisle)
+          : data;
+        
+        setProducts(filteredProducts);
       } catch (err) {
         console.error("Failed to fetch products:", err);
         setError("Failed to load products. Please try again later.");
@@ -26,7 +36,7 @@ export default function ProductGrid() {
     };
 
     fetchProducts();
-  }, []);
+  }, [selectedAisle]);
 
   if (loading) {
     return (
@@ -52,8 +62,18 @@ export default function ProductGrid() {
 
   if (products.length === 0) {
     return (
-      <div className="flex justify-center items-center py-12">
-        <div className="text-gray-600">No products available.</div>
+      <div className="flex flex-col justify-center items-center py-12">
+        <div className="text-gray-600 mb-2">
+          {selectedAisle ? `No products found in ${selectedAisle} aisle.` : "No products available."}
+        </div>
+        {selectedAisle && (
+          <button
+            onClick={() => window.location.href = '/'}
+            className="text-blue-600 hover:text-blue-800 underline"
+          >
+            View all products
+          </button>
+        )}
       </div>
     );
   }

@@ -1,6 +1,5 @@
-// Use Next.js API routes as proxy to avoid CORS issues
-// These routes forward requests to the backend at localhost:8082
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || '';
+// Direct connection to BFF at localhost:8081 (CORS is configured on the BFF)
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8081';
 
 export interface ApiProduct {
   id: string;
@@ -24,6 +23,12 @@ export interface Order {
   total: number;
   status?: string;
   createdAt?: string;
+}
+
+export interface Aisle {
+  name: string;
+  icon: string;
+  count: number;
 }
 
 class ApiClient {
@@ -61,7 +66,12 @@ class ApiClient {
     }
   }
 
-  // Products API
+  // Aisles API - calling BFF directly
+  async getAisles(): Promise<Aisle[]> {
+    return this.request<Aisle[]>('/api/aisles');
+  }
+
+  // Products API - calling BFF directly
   async getProducts(): Promise<ApiProduct[]> {
     return this.request<ApiProduct[]>('/api/products');
   }
@@ -70,7 +80,7 @@ class ApiClient {
     return this.request<ApiProduct>(`/api/products/${id}`);
   }
 
-  // Orders API
+  // Orders API - calling BFF directly
   async getOrders(): Promise<Order[]> {
     return this.request<Order[]>('/api/orders');
   }

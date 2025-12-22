@@ -3,7 +3,7 @@ import * as protoLoader from '@grpc/proto-loader';
 import path from 'path';
 
 const PROTO_PATH = path.join(process.cwd(), 'proto');
-const GRPC_SERVER = process.env.GRPC_SERVER || process.env.BACKEND_URL?.replace('http://', '').replace('https://', '') || 'localhost:8082';
+const GRPC_SERVER = process.env.GRPC_SERVER || process.env.BACKEND_URL?.replace('http://', '').replace('https://', '') || 'localhost:8080';
 
 // Load protobuf definitions
 const productPackageDefinition = protoLoader.loadSync(

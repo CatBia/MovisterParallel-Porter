@@ -11,7 +11,7 @@ A modern, responsive e-commerce web application built with Next.js, React, TypeS
 - 💾 **Persistent Cart**: Cart data is saved to localStorage
 - 📱 **Responsive Design**: Works seamlessly on desktop, tablet, and mobile devices
 - 🎨 **Modern UI**: Clean and intuitive user interface with smooth animations
-- 🔌 **Backend Integration**: Connected to REST API at localhost:8080
+- 🔌 **Backend Integration**: Connected to REST API at localhost:8081
 
 ## Getting Started
 
@@ -20,7 +20,7 @@ A modern, responsive e-commerce web application built with Next.js, React, TypeS
 - Node.js 18+ and npm (for local development)
 - Docker and Docker Compose (for containerized deployment)
 - Make (optional, for using Makefile commands)
-- Backend API running on `localhost:8082` (see Backend Configuration below)
+- Backend API running on `localhost:8081` (see Backend Configuration below)
 
 ### Running with Docker (Recommended)
 
@@ -76,23 +76,27 @@ npm run dev
 
 ## Backend Configuration
 
-The frontend connects to a backend gRPC server running on `localhost:8082`. The gRPC server address can be configured using environment variables.
+The frontend connects directly to the BFF (Backend For Frontend) running on `localhost:8081`. The BFF has CORS configured for `localhost:3001`, allowing direct API calls from the frontend.
 
 ### Environment Variables
 
 Create a `.env.local` file in the root directory:
 
 ```bash
-GRPC_SERVER=localhost:8082
-# Or use BACKEND_URL (will be converted to gRPC format)
-BACKEND_URL=http://localhost:8082
+NEXT_PUBLIC_API_URL=http://localhost:8081
 ```
 
-If not set, it defaults to `localhost:8082`.
+If not set, it defaults to `http://localhost:8081`.
 
-### gRPC Services
+**Note:** The Next.js API routes in `app/api/` use gRPC to communicate with the BFF. The frontend components use the REST API client in `lib/api.ts` which calls the BFF directly (CORS is configured on the BFF).
 
-The backend should provide the following gRPC services defined in the `proto/` directory:
+### Communication Architecture
+
+The frontend makes REST API calls directly to the BFF at `localhost:8081` (CORS enabled). The Next.js API routes (`app/api/`) are available as an alternative proxy layer that uses gRPC to communicate with the BFF.
+
+### gRPC Services (used by Next.js API routes)
+
+The BFF should provide the following gRPC services defined in the `proto/` directory:
 
 **ProductService:**
 - `GetProducts(GetProductsRequest) returns (GetProductsResponse)` - Get all products
