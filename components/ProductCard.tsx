@@ -8,13 +8,21 @@ interface ProductCardProps {
   product: Product;
 }
 
+// Default placeholder image URL
+const DEFAULT_IMAGE = "https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=400&h=400&fit=crop";
+
 export default function ProductCard({ product }: ProductCardProps) {
+  // Use product image if available, otherwise use default placeholder
+  const imageUrl = product.image && product.image.trim() !== '' 
+    ? product.image 
+    : DEFAULT_IMAGE;
+
   return (
     <Link href={`/products/${product.id}`}>
       <div className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-xl transition-shadow duration-300 cursor-pointer">
         <div className="relative h-32 sm:h-48 lg:h-64 w-full">
           <Image
-            src={product.image}
+            src={imageUrl}
             alt={product.name}
             fill
             className="object-cover"

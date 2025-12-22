@@ -12,6 +12,9 @@ interface ProductPageProps {
   };
 }
 
+// Default placeholder image URL
+const DEFAULT_IMAGE = "https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=400&h=400&fit=crop";
+
 export default function ProductPage({ params }: ProductPageProps) {
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
@@ -71,13 +74,18 @@ export default function ProductPage({ params }: ProductPageProps) {
     setQuantity(1);
   };
 
+  // Use product image if available, otherwise use default placeholder
+  const imageUrl = product.image && product.image.trim() !== '' 
+    ? product.image 
+    : DEFAULT_IMAGE;
+
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div className="bg-white rounded-lg shadow-lg overflow-hidden">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 p-8">
           <div className="relative h-96 w-full">
             <Image
-              src={product.image}
+              src={imageUrl}
               alt={product.name}
               fill
               className="object-cover rounded-lg"

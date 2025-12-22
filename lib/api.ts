@@ -1,5 +1,6 @@
-// Direct connection to BFF at localhost:8081 (CORS is configured on the BFF)
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8081';
+// Direct connection to BFF at localhost:8081 for aisles and localhost:8080 for products/orders (CORS is configured on the BFF)
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
+const AISLES_API_BASE_URL = process.env.NEXT_PUBLIC_AISLES_API_URL || 'http://localhost:8081';
 
 export interface ApiProduct {
   id: string;
@@ -32,17 +33,20 @@ export interface Aisle {
 }
 
 class ApiClient {
-  private baseUrl: string;
+  private productsOrdersBaseUrl: string;
+  private aislesBaseUrl: string;
 
-  constructor(baseUrl: string) {
-    this.baseUrl = baseUrl;
+  constructor(productsOrdersBaseUrl: string, aislesBaseUrl: string) {
+    this.productsOrdersBaseUrl = productsOrdersBaseUrl;
+    this.aislesBaseUrl = aislesBaseUrl;
   }
 
   private async request<T>(
+    baseUrl: string,
     endpoint: string,
     options: RequestInit = {}
   ): Promise<T> {
-    const url = `${this.baseUrl}${endpoint}`;
+    const url = `${baseUrl}${endpoint}`;
     
     const config: RequestInit = {
       headers: {
@@ -68,49 +72,49 @@ class ApiClient {
 
   // Aisles API - calling BFF directly
   async getAisles(): Promise<Aisle[]> {
-    return this.request<Aisle[]>('/api/aisles');
+    return this.request<Aisle[]>(this.aislesBaseUrl, '/api/aisles');
   }
 
   // Products API - calling BFF directly
   async getProducts(): Promise<ApiProduct[]> {
-    return this.request<ApiProduct[]>('/api/products');
+    return this.request<ApiProduct[]>(this.productsOrdersBaseUrl, '/api/products');
   }
 
   async getProduct(id: string): Promise<ApiProduct> {
-    return this.request<ApiProduct>(`/api/products/${id}`);
+    return this.request<ApiProduct>(this.productsOrdersBaseUrl, `/api/products/${id}`);
   }
 
   // Orders API - calling BFF directly
   async getOrders(): Promise<Order[]> {
-    return this.request<Order[]>('/api/orders');
+    return this.request<Order[]>(this.productsOrdersBaseUrl, '/api/orders');
   }
 
   async getOrder(id: string): Promise<Order> {
-    return this.request<Order>(`/api/orders/${id}`);
+    return this.request<Order>(this.productsOrdersBaseUrl, `/api/orders/${id}`);
   }
 
   async createOrder(order: Omit<Order, 'id' | 'status' | 'createdAt'>): Promise<Order> {
-    return this.request<Order>('/api/orders', {
+    return this.request<Order>(this.productsOrdersBaseUrl, '/api/orders', {
       method: 'POST',
       body: JSON.stringify(order),
     });
   }
 
   async updateOrder(id: string, order: Partial<Order>): Promise<Order> {
-    return this.request<Order>(`/api/orders/${id}`, {
+    return this.request<Order>(this.productsOrdersBaseUrl, `/api/orders/${id}`, {
       method: 'PUT',
       body: JSON.stringify(order),
     });
   }
 
   async deleteOrder(id: string): Promise<void> {
-    return this.request<void>(`/api/orders/${id}`, {
+    return this.request<void>(this.productsOrdersBaseUrl, `/api/orders/${id}`, {
       method: 'DELETE',
     });
   }
 }
 
-export const apiClient = new ApiClient(API_BASE_URL);
+export const apiClient = new ApiClient(API_BASE_URL, AISLES_API_BASE_URL);
 
 
 
